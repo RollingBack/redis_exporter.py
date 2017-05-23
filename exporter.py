@@ -18,7 +18,7 @@ def definded(x):
 
 # 获取脚本变量
 try:
-    option_list, argvs = getopt(argv[1:], 'h:p:d:k:of:', ['db=', 'host=', 'port=', 'keys=', 'output-file='])
+    option_list, argvs = getopt(argv[1:], 'h:p:d:k:of:', ['db=', 'host=', 'port=', 'keys=', 'output-file=', 'help'])
 except GetoptError as error:
     print(error)
     exit(1)
@@ -36,9 +36,26 @@ for each_opt, value in option_list:
         output = True
     elif each_opt in ['-f', '--file']:
         txt_file = value
+    elif each_opt in ['--help']:
+        print("""
+本工具用于将目标redis server中的若干key导出并生成原始协议文本，用于配合redis-cli进行导出操作。
+用法: exporter.py 选项
+    -h <hostsname> 服务器名称(默认：localhost)
+    -p <port>      服务器端口(默认：6379)
+    -d <db>        数据库编号
+    -k <keys>       键，或者键的序列，用逗号(,)分割
+    -o <output>    直接输出而不写文件
+    -f <file>      定义写入的文件的文件名，-o时无效
+    --host=<host>  同-h
+    --port=<port>  同-p
+    --db=<db>      同-d
+    --keys=<keys>  同-k
+    --output-file=<file>  同-f
+    --help         显示本帮助       
+        """)
+        exit(0)
     else:
         pass
-
 # 设置默认值
 if not definded('host'):
     host = 'localhost'
@@ -73,6 +90,7 @@ client = get_redis_client(host, port, db)
 keys = keys.split(',')
 final_string = ''
 for each_key in keys:
+    each_key = each_key.strip(" ")
     key_type = client.type(each_key)
     if key_type == 'none':
         print('键{0}不存在'.format(each_key))
